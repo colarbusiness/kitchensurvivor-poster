@@ -3,55 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KitchenSurvivor 食谱分享</title>
+    <title>查看食谱</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 40px 20px; background-color: #f8f8f8; }
-        .card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1 { color: #333; margin-bottom: 10px; }
-        p { color: #666; font-size: 16px; line-height: 1.5; }
-        .btn { display: inline-block; background-color: #FF6B00; color: white; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 20px; width: 80%; }
-        .footer { margin-top: 30px; font-size: 12px; color: #999; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background-color: #f2f2f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+        }
+        h1 { font-size: 20px; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 30px; }
+        .btn {
+            background-color: #FF9500; /* 你的主题色 */
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        /* 微信提示遮罩 */
+        #wechat-tip {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1 id="recipe-title">正在加载食谱...</h1>
-        <p>好友分享了一道精选美食给你，<br>快来查看详细做法吧！</p >
-        
-        <a id="open-btn" href=" " class="btn">打开 App 查看详情</a >
+    <div id="wechat-tip">
+        <p style="font-size: 18px; color: white;">请点击右上角 ... <br>选择“在浏览器打开”</p >
     </div>
 
-    <div class="footer">
-        如果您未安装 KitchenSurvivor，请先前往 App Store 下载。
+    <div class="card">
+        <h1>正在打开 KitchenSurvivor...</h1>
+        <p>如果还没安装 App，请先去下载。</p >
+        <a id="open-btn" href=" " class="btn">打开 App 查看</a >
     </div>
 
     <script>
-        // 1. 获取 URL 中的参数 (例如 ?title=红烧肉&id=123)
+        // 1. 获取 URL 里的 id 参数
         const params = new URLSearchParams(window.location.search);
-        const title = params.get('title');
         const id = params.get('id');
 
-        // 2. 动态修改页面内容
-        if (title) {
-            document.getElementById('recipe-title').innerText = decodeURIComponent(title);
-        }
-
-        // 3. 配置唤起 App 的链接 (URL Scheme)
-        // 格式：kitchensurvivor://recipe?id=123
-        const appScheme = `kitchensurvivor://recipe?id=${id || ''}`;
+        // 2. ⚠️ 关键点：这里必须和 Xcode 里的 URL Schemes 一模一样！
+        // 如果你 Xcode 里改成了 'kitchensurvivor'，这里就用 'kitchensurvivor'
+        // 如果你 Xcode 还是 'kitchen'，这里就用 'kitchen'
+        const scheme = 'kitchen'; 
         
-        const btn = document.getElementById('open-btn');
-        btn.onclick = function() {
-            window.location.href = appScheme;
-            
-            // 简单的一个延时逻辑：如果 2秒后还在当前页，说明没唤起成功，跳转 AppStore
-            setTimeout(function() {
-                // 替换成你的 App Store 链接
-                // window.location.href = 'https://apps.apple.com/...'; 
-                alert("如果没有跳转，请手动下载 App");
-            }, 2000);
-        };
+        const deepLink = `${scheme}://recipe?id=${id || ''}`;
+        
+        // 设置按钮链接
+        document.getElementById('open-btn').href = deepLink;
+
+        // 3. 检测是否在微信里
+        const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+        
+        if (isWeChat) {
+            // 如果是微信，显示遮罩，提示用户去 Safari 打开
+            document.getElementById('wechat-tip').style.display = 'block';
+        } else {
+            // 如果不是微信（比如 Safari），尝试自动跳转
+            window.location.href = deepLink;
+        }
     </script>
 </body>
 </html>
