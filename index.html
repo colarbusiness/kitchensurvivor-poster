@@ -35,6 +35,14 @@
             border-radius: 25px;
             font-weight: bold;
             display: inline-block;
+            margin-bottom: 10px;
+            width: 80%; /* 稍微调整宽度 */
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: #FF9500;
+            border: 2px solid #FF9500;
+            margin-top: 10px;
         }
         /* 微信提示遮罩 */
         #wechat-tip {
@@ -55,38 +63,72 @@
     </div>
 
     <div class="card">
-        <h1>正在打开 KitchenSurvivor...</h1>
-        <p>如果还没安装 App，请先去下载。</p >
-        <a id="open-btn" href=" " class="btn">打开 App 查看</a >
+        <h1 id="status-text">正在尝试打开...</h1>
+        <p>KitchenSurvivor - 厨房幸存者</p >
+        
+        <a id="open-btn" href="#" class="btn">打开 App 查看</a>
+        
+        <a id="download-btn" href="#" class="btn btn-outline">去 App Store 下载</a>
     </div>
 
     <script>
-        // 1. 获取 URL 里的 id 参数
+        // 1. 配置信息
+        // 你的 App Store ID
+        const appleAppID = '6757759255'; 
+        // App Store 链接
+        const appStoreUrl = `https://apps.apple.com/cn/app/id${appleAppID}`;
+        // URL Scheme (必须与 Xcode 一致)
+        const scheme = 'kitchensurvivor'; 
+
+        // 2. 获取参数并生成 Deep Link
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-
-        // 2. ⚠️ 关键点：这里必须和 Xcode 里的 URL Schemes 一模一样！
-        // 如果你 Xcode 里改成了 'kitchensurvivor'，这里就用 'kitchensurvivor'
-        // 如果你 Xcode 还是 'kitchen'，这里就用 'kitchen'
-        const scheme = 'kitchensurvivor'; 
-        
         const deepLink = `${scheme}://recipe?id=${id || ''}`;
         
-        // 设置按钮链接
-        document.getElementById('open-btn').href = deepLink;
-
-        // 3. 检测是否在微信里
-        const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+        // 3. 设置按钮链接
+        const openBtn = document.getElementById('open-btn');
+        const downloadBtn = document.getElementById('download-btn');
         
+        openBtn.href = deepLink;
+        downloadBtn.href = appStoreUrl; // 手动下载按钮
+
+        // 4. 环境检测与自动跳转逻辑
+        const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
         if (isWeChat) {
-            // 如果是微信，显示遮罩，提示用户去 Safari 打开
+            // --- 微信环境 ---
             document.getElementById('wechat-tip').style.display = 'block';
         } else {
-            // 如果不是微信（比如 Safari），尝试自动跳转
+            // --- 非微信环境 (Safari 等) ---
+            
+            // 尝试自动跳转 App
             window.location.href = deepLink;
+
+            // ⚠️ 核心逻辑：设置倒计时，如果一定时间内页面还停留在前台，说明没唤起 App
+            const start = Date.now();
+            const delay = 2500; // 2.5秒等待时间
+
+            setTimeout(function() {
+                const end = Date.now();
+                
+                // 逻辑解释：
+                // 如果 App 打开了，浏览器会挂起，时间差会大于 (delay + 缓冲值)
+                // 如果 App 没打开，浏览器一直在运行，时间差几乎等于 delay
+                // !document.hidden 用于辅助判断页面是否还在前台
+                if (!document.hidden && (end - start) < (delay + 1000)) {
+                    
+                    // 更改文字提示
+                    document.getElementById('status-text').innerText = "未检测到 App，正在前往商店...";
+                    
+                    // 跳转到 App Store
+                    window.location.href = appStoreUrl;
+                }
+            }, delay);
         }
     </script>
 </body>
 </html>
+
 
 
