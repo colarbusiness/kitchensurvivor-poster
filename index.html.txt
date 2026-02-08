@@ -68,7 +68,7 @@
         // 2. ⚠️ 关键点：这里必须和 Xcode 里的 URL Schemes 一模一样！
         // 如果你 Xcode 里改成了 'kitchensurvivor'，这里就用 'kitchensurvivor'
         // 如果你 Xcode 还是 'kitchen'，这里就用 'kitchen'
-        const scheme = 'kitchen'; 
+        const scheme = 'kitchensurvivor'; 
         
         const deepLink = `${scheme}://recipe?id=${id || ''}`;
         
@@ -88,3 +88,4 @@
     </script>
 </body>
 </html>
+
