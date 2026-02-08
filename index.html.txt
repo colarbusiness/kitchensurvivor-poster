@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenSurvivor 食谱分享</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 40px 20px; background-color: #f8f8f8; }
+        .card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 16px; line-height: 1.5; }
+        .btn { display: inline-block; background-color: #FF6B00; color: white; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 20px; width: 80%; }
+        .footer { margin-top: 30px; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1 id="recipe-title">正在加载食谱...</h1>
+        <p>好友分享了一道精选美食给你，<br>快来查看详细做法吧！</p >
+        
+        <a id="open-btn" href=" " class="btn">打开 App 查看详情</a >
+    </div>
+
+    <div class="footer">
+        如果您未安装 KitchenSurvivor，请先前往 App Store 下载。
+    </div>
+
+    <script>
+        // 1. 获取 URL 中的参数 (例如 ?title=红烧肉&id=123)
+        const params = new URLSearchParams(window.location.search);
+        const title = params.get('title');
+        const id = params.get('id');
+
+        // 2. 动态修改页面内容
+        if (title) {
+            document.getElementById('recipe-title').innerText = decodeURIComponent(title);
+        }
+
+        // 3. 配置唤起 App 的链接 (URL Scheme)
+        // 格式：kitchensurvivor://recipe?id=123
+        const appScheme = `kitchensurvivor://recipe?id=${id || ''}`;
+        
+        const btn = document.getElementById('open-btn');
+        btn.onclick = function() {
+            window.location.href = appScheme;
+            
+            // 简单的一个延时逻辑：如果 2秒后还在当前页，说明没唤起成功，跳转 AppStore
+            setTimeout(function() {
+                // 替换成你的 App Store 链接
+                // window.location.href = 'https://apps.apple.com/...'; 
+                alert("如果没有跳转，请手动下载 App");
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
